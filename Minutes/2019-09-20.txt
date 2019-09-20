@@ -1,0 +1,13 @@
+2019-09-20
+Jessica
+Dante
+
+(others notified of conflicts)
+
+a. Jessica – (SAS) generic utility to rand generate controlled terms from metadata (Race & Sex)
+   i. Next: consider parameter syntax – weighting the categories found in controlled terms
+b. Dante – ARMCD, ARM from metadata
+   i. Next: read from TrialDesignMatrix_for_TDF_study.xlsx
+  ii. Next: consider stratification – TD elements? Other domain dependencies?
+ iii. anything else required in the "create-patients" call?
+
