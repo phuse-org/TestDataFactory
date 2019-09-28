@@ -6,13 +6,14 @@
   Authors Name:       dditommaso
   Program Date:       2019-09-28
 
-  Description:        
+  Description:        Read in user-specified study details and create
+                      Subject IDs and Treatment Arm Codes, according to treatment arm weighting
 
-  Input(s):           
+  Input(s):           ARMCD  from user-specified for TA (Trial Design Matrix workbook)
+                      ARMWGT from user-specified SDTM_Configufation (TDF-extended TDM wkbk)
+  Output(s):          DM dataset with 2 vars: SUBJID, ARMCD
 
-  Output(s):          
-
-  Comments:           
+  Comments:           Just a first step for now
 
   Revision History:   
   Date:    Author:    Description of Change:
