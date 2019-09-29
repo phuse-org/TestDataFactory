@@ -21,7 +21,7 @@
 
   Comments:           Just a first step for now
 
-  Revision History:   
+  Revision History:
   Date:    Author:    Description of Change:
 ***/
 
@@ -30,7 +30,7 @@
                         studyid=&tdf_studyid, bign=&tdf_plansub);
   *--- Confirm number of arms defined, and their codes ;
   *--- See SDTM IG "Variable-Naming Conventions" ;
-  *--- "ARMCD is limited to 20 characters and 
+  *--- "ARMCD is limited to 20 characters and
         does not have the character restrictions that apply to --TESTCD" ;
   proc sql noprint;
     select max(length(cfval)) into: cf_sitewgtlen trimmed
@@ -126,7 +126,7 @@
     *---Note: Length of SUBJID, below, is fixed at $10 by z4.-z5 construct ;
     attrib studyid length=$%length(&studyid) label='Study Identifier';
     attrib siteid  length=$4 label='Study Site Identifier';
-    attrib usubjid length=$%eval(%length(&studyid)+10+1) 
+    attrib usubjid length=$%eval(%length(&studyid)+10+1)
                    label='Subject Identifier';
     attrib subjid  length=$10 label='Subject Identifier for the Study';
     attrib &armvar length=$&ta_armlen label='Planned Arm Code';
@@ -174,7 +174,9 @@
       else idx+1;
 
       subjid = cats(siteid, '-', put(idx,z5.));
-      usubjid= cats(studyid, '/', subjid);      
+      usubjid= cats(studyid, '/', subjid);
+
+      drop idx;
     run;
 
   *--- Check whether resulting allcoations are correct ;
