@@ -27,7 +27,12 @@
 
 %macro generate_subjids(tain=work.ta, sdtmin=work.sdtm_config,
                         armvar=armcd, armdlim=|,
-                        studyid=&tdf_studyid, bign=&tdf_plansub);
+                        studyid=&tdf_studyid, bign=&tdf_plansub)
+                        / minoperator ;
+  %let armvar = %upcase(&armvar);
+  %if %eval("&armvar" IN ("ARMCD" "ARM")) %then ;
+  %else %put %sysfunc(compress(ERR OR)): Unexpected ARMVAR (&armvar), which should be ARMCD or ARM.;
+
   *--- Confirm number of arms defined, and their codes ;
   *--- See SDTM IG "Variable-Naming Conventions" ;
   *--- "ARMCD is limited to 20 characters and
@@ -121,12 +126,17 @@
 
     *---Note: Length of SITEID, below, is fixed at $4 by z4. construct ;
     *---Note: Length of SUBJID, below, is fixed at $10 by z4.-z5 construct ;
-    attrib studyid length=$%length(&studyid) label='Study Identifier';
-    attrib siteid  length=$4 label='Study Site Identifier';
-    attrib usubjid length=$%eval(%length(&studyid)+10+1)
+    attrib STUDYID length=$%length(&studyid) label='Study Identifier';
+    attrib SITEID  length=$4 label='Study Site Identifier';
+    attrib USUBJID length=$%eval(%length(&studyid)+10+1)
                    label='Subject Identifier';
-    attrib subjid  length=$10 label='Subject Identifier for the Study';
-    attrib &armvar length=$&ta_armlen label='Planned Arm Code';
+    attrib SUBJID  length=$10 label='Subject Identifier for the Study';
+
+    %if "&armvar" = "ARMCD" %then 
+      attrib &armvar length=$&ta_armlen label='Planned Arm Code';
+    %else
+      attrib &armvar length=$&ta_armlen label='Description of Planned Arm';
+    ;
 
     studyid = "&studyid";
 
