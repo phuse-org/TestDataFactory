@@ -1,6 +1,5 @@
-libname tdfstudy xlsx '..\TrialDesign-Tool\TrialDesignMatrix_for_TDF_study.xlsm' access=readonly;
-
-libname library  '.';
+libname library '.';
+libname tdfdata '..\Data';
 
 options
   formchar = "|----|+|---+=|-/\<>*"
