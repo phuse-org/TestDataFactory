@@ -54,7 +54,6 @@
   *--- Process SITE IDs and Weights ;
     data _null_;
       set &sdtmin (where=(upcase(cfparmcd) = 'SITEWGT'));
-/*      retain len_siteid 0 ;*/
 
       length nxt nxtsite nxtwgt $&cf_sitewgtlen;
 
@@ -70,12 +69,10 @@
         call symput('cf_site'!!strip(put(idx,best.)), strip(nxtsite));
         call symput('cf_sitewgt'!!strip(put(idx,best.)), strip(nxtwgt));
 
-/*        if length(nxtsite) > len_siteid then len_siteid = length(nxtsite);*/
         idx+1;
       end;
 
       call symput('cf_siten', strip(put(idx-1, best.)));
-/*      call symput('len_siteid', strip(put(len_siteid, best.)));*/
     run;
 
   *--- Default arm weights to balanced, 1 each ;
