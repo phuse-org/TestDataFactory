@@ -10,12 +10,12 @@
                       and create Subject IDs and Treatment Arm Codes, accordingly
   Input(s):           TAIN   - TA dset, created in WORK by macro m_read_tdmatrix.sas
                       SDTMIN - SDTM_CONFIG dset, created in WORK by same macro, above
-                      ARMVAR - ARM or ARMCD, a var in the TA dset
                       STUDYID- Study ID, default is created by same macro, above
                                Used to create SUBJID, concat of Study & Subj IDs
                       BIGN   - Number of subjs, default is created by same macro, above
-                      ARMDLIM- Pipe (|) by default, this char should NOT appear in
-                               any ARMVAR value. Override, as needed
+                      ARMDLIM- Pipe (|) by default to separate ARMCD values during processing, 
+                               this char should NOT appear in any ARMCD value. 
+                               Override, as needed
   Output(s):          DM dataset with 5 (somewhat redundant) standard SDTM vars:
                         STUDYID, USUBJIT, SITEID, SUBJID, ARMCD
 
@@ -26,12 +26,9 @@
 ***/
 
 %macro generate_subjids(tain=work.ta, sdtmin=work.sdtm_config,
-                        armvar=armcd, armdlim=|,
-                        studyid=&tdf_studyid, bign=&tdf_plansub)
+                        studyid=&tdf_studyid, bign=&tdf_plansub, 
+                        armdlim=|)
                         / minoperator ;
-  %let armvar = %upcase(&armvar);
-  %if %eval("&armvar" IN ("ARMCD" "ARM")) %then ;
-  %else %put %sysfunc(compress(ERR OR)): Unexpected ARMVAR (&armvar), which should be ARMCD or ARM.;
 
   *--- Confirm number of arms defined, and their codes ;
   *--- See SDTM IG "Variable-Naming Conventions" ;
@@ -42,25 +39,28 @@
     from &sdtmin
     where upcase(cfparmcd) = 'SITEWGT';
 
-    select distinct(compress(upcase(&armvar))) into: ta_arms separated by "&armdlim"
+    select distinct(compress(upcase(armcd))) into: ta_arms separated by "&armdlim"
     from &tain
-    where not missing(&armvar);
+    where not missing(armcd);
 
-    select count(distinct(&armvar)) into: ta_armn trimmed
+    select count(distinct(armcd)) into: ta_armn trimmed
     from &tain
-    where not missing(&armvar);
+    where not missing(armcd);
 
-    select max(length(&armvar)) into: ta_armlen trimmed
+    select max(length(arm)), max(length(armcd)) 
+           into :ta_armlen trimmed, :ta_armcdlen trimmed
     from &tain
-    where not missing(&armvar);
+    where not missing(armcd);
   quit;
   %put NOTE: Detected SiteWgt len [&cf_sitewgtlen], and [&ta_armn] arms as [&ta_arms];
 
   *--- Process SITE IDs and Weights ;
     data _null_;
       set &sdtmin (where=(upcase(cfparmcd) = 'SITEWGT'));
+      retain cf_sitelen 0;
 
-      length nxt nxtsite nxtwgt $&cf_sitewgtlen;
+      length nxt nxtsite nxtwgt
+             $%sysfunc(max(&cf_sitewgtlen, 4));
 
       idx=1;
       do while (scan(strip(cfval), idx, ',') ne ' ');
@@ -71,13 +71,20 @@
 
         if missing(nxtwgt) then nxtwgt = '1';
 
+        *--- Standardize NUM Site IDs to INTEGER IDs in z4. format ;
+        test_num = input(nxtsite, ?? best.);
+        if not missing(test_num) then 
+           nxtsite = strip(put(test_num, z4.));
+
         call symput('cf_site'!!strip(put(idx,best.)), strip(nxtsite));
         call symput('cf_sitewgt'!!strip(put(idx,best.)), strip(nxtwgt));
 
+        if length(nxtsite) > cf_sitelen then cf_sitelen = length(nxtsite);
         idx+1;
       end;
 
-      call symput('cf_siten', strip(put(idx-1, best.)));
+      call symput('cf_siten',   strip(put(idx-1, best.)));
+      call symput('cf_sitelen', strip(put(cf_sitelen, best.)));
     run;
 
   *--- Default arm weights to balanced, 1 each ;
@@ -119,58 +126,70 @@
     %put NOTE-  Site &idx: &&cf_site&idx with weight &&cf_sitewgt&idx ;
   %end;
 
+  *--- Use TA dset to format ARMCD into ARM values ;
+    proc sort data=ta (keep=armcd arm rename=(armcd=start arm=label))
+              out=fmtin nodupkey;
+      by start label;
+    run;
+    data fmtin;
+      set fmtin;
+      retain fmtname 'ta_arm' type 'C';
+    run;
+    proc format cntlin=fmtin;
+    run;
+
   *--- Generate subjects in weighted arms ;
-  data dm (keep=studyid siteid usubjid subjid &armvar);
-    sitedenom = sum(0 %do idx = 1 %to &cf_siten; , &&cf_sitewgt&idx %end;);
-    armdenom  = sum(0 %do idx = 1 %to &ta_armn; , &&ta_wgt&idx %end;);
+    data dm (keep=studyid siteid usubjid subjid armcd arm);
+      sitedenom = sum(0 %do idx = 1 %to &cf_siten; , &&cf_sitewgt&idx %end;);
+      armdenom  = sum(0 %do idx = 1 %to &ta_armn; , &&ta_wgt&idx %end;);
 
-    *---Note: Length of SITEID, below, is fixed at $4 by z4. construct ;
-    *---Note: Length of SUBJID, below, is fixed at $10 by z4.-z5 construct ;
-    attrib STUDYID length=$%length(&studyid) label='Study Identifier';
-    attrib SITEID  length=$4 label='Study Site Identifier';
-    attrib USUBJID length=$%eval(%length(&studyid)+10+1)
-                   label='Subject Identifier';
-    attrib SUBJID  length=$10 label='Subject Identifier for the Study';
+      *---Note: Length of SUBJID, below, is set by "-z5." construct (6 char suffix);
+      attrib STUDYID length=$%length(&studyid) label='Study Identifier';
+      attrib SITEID  length=$&cf_sitelen label='Study Site Identifier';
+      attrib USUBJID length=$%eval(%length(&studyid)+1+&cf_sitelen+5+1)
+                     label='Subject Identifier';
+      attrib SUBJID  length=$%eval(&cf_sitelen+5+1) 
+                     label='Subject Identifier for the Study';
 
-    %if "&armvar" = "ARMCD" %then 
-      attrib &armvar length=$&ta_armlen label='Planned Arm Code';
-    %else
-      attrib &armvar length=$&ta_armlen label='Description of Planned Arm';
-    ;
+      attrib ARMCD length=$&ta_armcdlen label='Planned Arm Code';
+      attrib ARM   length=$&ta_armlen   label='Description of Planned Arm';
+      ;
 
-    studyid = "&studyid";
+      studyid = "&studyid";
 
-    do idx = 1 to &bign;
-      *--- Random allocation to SITE ;
-        nxtsite = ranuni(285);
+      do idx = 1 to &bign;
+        *--- Random allocation to SITE ;
+          nxtsite = ranuni(285);
 
-        if nxtsite < &cf_sitewgt1/sitedenom then siteid = "&cf_site1";
-          %if &cf_siten > 2 %then %do idx = 2 %to %eval(&cf_siten-1);
-            else if nxtsite < sum(0 %do jdx= 1 %to &idx;, &&cf_sitewgt&jdx %end;)
-                    /sitedenom then siteid = "&&cf_site&idx";
-          %end;
-        else siteid = "&&cf_site&cf_siten";
+          if nxtsite < &cf_sitewgt1/sitedenom then siteid = "&cf_site1";
+            %if &cf_siten > 2 %then %do idx = 2 %to %eval(&cf_siten-1);
+              else if nxtsite < sum(0 %do jdx= 1 %to &idx;, &&cf_sitewgt&jdx %end;)
+                      /sitedenom then siteid = "&&cf_site&idx";
+            %end;
+          else siteid = "&&cf_site&cf_siten";
 
-        subjid = cats(siteid, '-', put(idx,z5.));
-        usubjid= cats(studyid, '/', subjid);
+          subjid = cats(siteid, '-', put(idx,z5.));
+          usubjid= cats(studyid, '/', subjid);
 
-      *--- Random allocation to ARMCD ;
-        nxtsubj = ranuni(41539);
+        *--- Random allocation to ARMCD ;
+          nxtsubj = ranuni(41539);
 
-        if nxtsubj < &ta_wgt1/armdenom then &armvar = "&ta_arm1";
-          %if &ta_armn > 2 %then %do idx = 2 %to %eval(&ta_armn-1);
-            else if nxtsubj < sum(0 %do jdx= 1 %to &idx;, &&ta_wgt&jdx %end;)
-                    /armdenom then &armvar = "&&ta_arm&idx";
-          %end;
-        else &armvar = "&&ta_arm&ta_armn";
+          if nxtsubj < &ta_wgt1/armdenom then armcd = "&ta_arm1";
+            %if &ta_armn > 2 %then %do idx = 2 %to %eval(&ta_armn-1);
+              else if nxtsubj < sum(0 %do jdx= 1 %to &idx;, &&ta_wgt&jdx %end;)
+                      /armdenom then armcd = "&&ta_arm&idx";
+            %end;
+          else armcd = "&&ta_arm&ta_armn";
 
-      OUTPUT;
-    end;
-  run;
+        arm = strip(put(armcd, $ta_arm.));
 
-  proc sort data=dm;
-    by studyid siteid subjid;
-  run;
+        OUTPUT;
+      end;
+    run;
+
+    proc sort data=dm;
+      by studyid siteid subjid;
+    run;
 
   *--- Update to gapless, ordinal subjid WITHIN SITE ;
     data tdfdata.dm (label = 'SDTM Demographics');
@@ -187,10 +206,10 @@
     run;
 
   *--- Check whether resulting allcoations are correct ;
-    proc freq data=dm;
-      tables siteid &armvar / list missing nocol nocum;
+    proc freq data=tdfdata.dm;
+      tables siteid armcd arm / list missing nocol nocum;
     run;
-
+%quick_exit:
 %mend generate_subjids;
 
 
