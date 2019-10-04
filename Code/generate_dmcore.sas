@@ -1,6 +1,6 @@
 /*** Standard PhUSE Test Data Factory Program Header
   Project:            PhUSE Test Data Factory
-  Program Name:       gen_sitearmwgts.sas
+  Program Name:       generate_dmcore.sas
   SAS Version:        SAS Sever 9.4 M5
   Operating System:   MS Window Sever 2016
   Authors Name:       dditommaso
@@ -17,7 +17,7 @@
                                this char should NOT appear in any ARMCD value. 
                                Override, as needed
   Output(s):          DM dataset with 5 (somewhat redundant) standard SDTM vars:
-                        STUDYID, USUBJIT, SITEID, SUBJID, ARMCD
+                        STUDYID, USUBJIT, SITEID, SUBJID, ARMCD, ARM
 
   Comments:           Just a first step for now
 
@@ -25,7 +25,7 @@
   Date:    Author:    Description of Change:
 ***/
 
-%macro generate_subjids(tain=work.ta, sdtmin=work.sdtm_config,
+%macro generate_dmcore(tain=work.ta, sdtmin=work.sdtm_config,
                         studyid=&tdf_studyid, bign=&tdf_plansub, 
                         armdlim=|)
                         / minoperator ;
@@ -210,10 +210,10 @@
       tables siteid armcd arm / list missing nocol nocum;
     run;
 %quick_exit:
-%mend generate_subjids;
+%mend generate_dmcore;
 
 
 %m_read_tdmatrix(path=..\TrialDesign-Tool\, file=TrialDesignMatrix_for_TDF_study.xlsm)
 
-%generate_subjids()
+%generate_dmcore()
 *;

@@ -39,6 +39,17 @@
       when('PLANSUB') call symput('tdf_plansub', strip(tsval));
       otherwise;
     end;
+
+    array chars [*] $_character_;
+    array ucchr [2] $ domain tsparmcd;
+    do idx = 1 to dim(chars);
+      chars[idx] = strip(chars[idx]);
+      chars[idx] = compress(chars[idx], '090A0D'x);
+    end;
+    do idx = 1 to dim(ucchr);
+      chars[idx] = upcase(chars[idx]);
+    end;
+    drop idx;
   run;
 
   data ta;
@@ -49,3 +60,8 @@
     set tdfstudy.sdtm_configuration (where=(not missing(cfdomain)));
   run;
 %mend m_read_tdmatrix;
+
+/*** test
+  %m_read_tdmatrix(path=../TrialDesign-Tool/,
+                   file=TrialDesignMatrix_for_TDF_study.xlsm);
+***/
