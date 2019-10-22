@@ -25,7 +25,7 @@
                                  (<domain-prefix>.)variable-name
                                  "variable-name" is sufficient if this uniquely identifies a var
                                  "domain-prefix.variable-name" should otherwise be specified
-                        <MACVAR> A global macro var to contain an PARTIAL attrib statement 
+                        <MACVAR> A global macro var to contain a PARTIAL attrib statement 
                                - CDISC does not specify LENGTH, which the caller can add
                                  to complete this ATTRIB statement.
 
