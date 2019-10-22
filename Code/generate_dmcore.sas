@@ -138,21 +138,38 @@
     proc format cntlin=fmtin;
     run;
 
+
+  *--- Retrieve CDISC attributes for Core DM vars ;
+    %m_read_sdtmig_var(path=../_Offline_/,
+                       file=sdtmig-3-3-excel.xlsx,
+                       tab=SDTMIG V3.3 VARIABLES,
+                       var=dm.studyid,
+                       macvar=a_studyid)
+  
+    %m_read_sdtmig_var(var=dm.siteid,
+                       macvar=a_siteid)
+    %m_read_sdtmig_var(var=dm.usubjid,
+                       macvar=a_usubjid)
+    %m_read_sdtmig_var(var=dm.subjid,
+                       macvar=a_subjid)
+    %m_read_sdtmig_var(var=dm.armcd,
+                       macvar=a_armcd)
+    %m_read_sdtmig_var(var=dm.arm,
+                       macvar=a_arm)
+
   *--- Generate subjects in weighted arms ;
     data dm (keep=studyid siteid usubjid subjid armcd arm);
       sitedenom = sum(0 %do idx = 1 %to &cf_siten; , &&cf_sitewgt&idx %end;);
       armdenom  = sum(0 %do idx = 1 %to &ta_armn; , &&ta_wgt&idx %end;);
 
       *---Note: Length of SUBJID, below, is set by "-z5." construct (6 char suffix);
-      attrib STUDYID length=$%length(&studyid) label='Study Identifier';
-      attrib SITEID  length=$&cf_sitelen label='Study Site Identifier';
-      attrib USUBJID length=$%eval(%length(&studyid)+1+&cf_sitelen+5+1)
-                     label='Subject Identifier';
-      attrib SUBJID  length=$%eval(&cf_sitelen+5+1) 
-                     label='Subject Identifier for the Study';
+      &a_STUDYID length=$%length(&studyid) ;
+      &a_SITEID  length=$&cf_sitelen ;
+      &a_USUBJID length=$%eval(%length(&studyid)+1+&cf_sitelen+5+1) ;
+      &a_SUBJID  length=$%eval(&cf_sitelen+5+1) ;
 
-      attrib ARMCD length=$&ta_armcdlen label='Planned Arm Code';
-      attrib ARM   length=$&ta_armlen   label='Description of Planned Arm';
+      &a_ARMCD   length=$&ta_armcdlen ;
+      &a_ARM     length=$&ta_armlen ;
       ;
 
       studyid = "&studyid";
@@ -211,9 +228,3 @@
     run;
 %quick_exit:
 %mend generate_dmcore;
-
-
-%m_read_tdmatrix(path=..\TrialDesign-Tool\, file=TrialDesignMatrix_for_TDF_study.xlsm)
-
-%generate_dmcore()
-*;

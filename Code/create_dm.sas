@@ -28,5 +28,6 @@
 
 
 *--- Generate foundational dates ;
-%gen_dates(updateds=dm, prefix=rf)
-%gen_dates(updateds=dm, prefix=rfx)
+%generate_dates(updateds=dm, prefix=rf)
+%generate_dates(updateds=dm, prefix=rfx)
+*;
