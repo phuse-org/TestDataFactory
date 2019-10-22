@@ -1,0 +1,7 @@
+Meeting cancelled due to multiple conflicts.
+Email follow-up confirmed changes needed to settings of this GitHub repository:
+1. Since branching the project from Peter's private repository to this PhUSE repository, team members can no longer contribute to the repository.
+2. Dante requested "owner" status, to be able to add contributors
+3. Team members confirmed their GitHub user IDs
+
+The settings have now been updated, so that team members can contribute to this PhUSE TDF repository.
