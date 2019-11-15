@@ -22,6 +22,7 @@
 %macro RandBetween(min, max);
    (&min + floor((1+&max-&min)*rand("uniform")))
 %mend;
+* rand('UNIform',a,b);
 
 %macro generate_dates(updateds=, prefix=)
                      / minoperator ;
