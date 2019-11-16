@@ -30,4 +30,4 @@ This project, as part of the Standard Analyses & Code Sharing working group, adh
 
 Special notes:
 + blank lines are highly meaningful for line wrapping
-+ 2 spaces (totally invisible!) at end of line can force line breaks ... so don't accidently trim trailing spaces from any GH markdown file!
++ **Note: 2 spaces (totally invisible!) at end of line forces a line break** ... so don't accidently trim trailing spaces from any GH markdown file!
