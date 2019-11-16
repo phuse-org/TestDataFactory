@@ -21,7 +21,7 @@ This project, as part of the Standard Analyses & Code Sharing working group, adh
     * [R Studio open-source](https://rstudio.com/products/rstudio/download/#download)
 
 * SAS software
-  * If your enterprise environment supports SAS and git integration, great!
+  * If your enterprise environment provides SAS and git integration, great!
   * Otherwise, consider setting up [SAS University Edition on a local virtual machine](https://www.sas.com/en_us/software/university-edition/download-software.html)
   * Yes - it's more difficult than working with open-source R and RStudio
   
