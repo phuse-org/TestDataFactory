@@ -139,8 +139,13 @@
     run;
 
 
-  *--- Retrieve CDISC attributes for Core DM vars ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+  *--- Retrieve CDISC attributes for DM domain and CORE vars ;
+    %m_read_sdtmig_dset(path=../WorkingCDISC/,
+                        file=sdtmig-3-3-excel.xlsx,
+                        tab=SDTMIG v3.3 Datasets,
+                        dset=DM);
+
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES,
                        var=dm.studyid,
@@ -158,7 +163,8 @@
                        macvar=a_arm)
 
   *--- Generate subjects in weighted arms ;
-    data dm (keep=studyid siteid usubjid subjid armcd arm);
+    data dm (keep=studyid siteid usubjid subjid armcd arm
+             label="&dm_label, &dm_class class, &dm_ver");
       sitedenom = sum(0 %do idx = 1 %to &cf_siten; , &&cf_sitewgt&idx %end;);
       armdenom  = sum(0 %do idx = 1 %to &ta_armn; , &&ta_wgt&idx %end;);
 
