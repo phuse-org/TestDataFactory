@@ -6,7 +6,7 @@
 
 ## Current standards:
 * [SDTM](https://www.cdisc.org/standards/foundational/sdtm)
-* [SDTMIG]()
+* [SDTMIG](https://www.cdisc.org/standards/foundational/sdtmig)
 * [ADaMIG](https://www.cdisc.org/standards/foundational/adam)
 
 ## CDISC Image
