@@ -19,7 +19,7 @@
 ***/
 
 *--- READ TDMatrix ;
-%m_read_tdmatrix(path=..\TrialDesign-Tool\, file=TrialDesignMatrix_for_TDF_study.xlsm)
+%m_read_tdmatrix(path=./, file=TrialDesignMatrix_for_TDF_study.xlsm)
 
 
 *--- Generate foundational DM vars (study, site, subj, arms) ;
@@ -28,6 +28,15 @@
 
 
 *--- Generate foundational dates ;
-%generate_dates(updateds=dm, prefix=rf)
-%generate_dates(updateds=dm, prefix=rfx)
+proc sql noprint;
+  select cfval into :enrllen from sdtm_config where cfparmcd="ENRLLEN";
+  select cfval into :trtlen from sdtm_config where cfparmcd="TRTLEN";
+  select cfval into :lenvar from sdtm_config where cfparmcd="LENVAR";
+  select input(tsval,yymmdd10.) into :sstdtc from ts where tsparmcd="SSTDTC";
+  select input(tsval,yymmdd10.) into :sendtc from ts where tsparmcd="SENDTC";
+quit;
+%generate_dates(inds=dm, outds=dm1, prefix=rfic, basedt= ,dtrnglo=&sstdtc, dtrnghi=&sstdtc+&enrllen);
+%generate_dates(inds=dm1, outds=dm2, prefix=rfst, basedt=rficdtc, dtrnglo=28, dtrnghi=56);
+%generate_dates(inds=dm2, outds=dm3, prefix=rfen, basedt=rfstdtc, dtrnglo=&trtlen-&lenvar, dtrnghi=&trtlen+&lenvar);
+%generate_dates(inds=dm3, outds=dm4, prefix=rfxst, basedt=rfstdtc, dtrnglo=0, dtrnghi=0);
 *;
