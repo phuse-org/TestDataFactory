@@ -57,7 +57,7 @@
   run;
 
   data sdtm_config;
-    set tdfstudy.sdtm_configuration (where=(not missing(cfdomain)));
+    set tdfstudy.tdf_configuration (where=(not missing(cfdomain)));
   run;
 %mend m_read_tdmatrix;
 

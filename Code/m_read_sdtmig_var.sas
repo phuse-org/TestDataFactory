@@ -113,32 +113,31 @@
 
 
 /*** tests
-  libname sdtmig xlsx "../_Offline_/sdtmig-3-3-excel.xlsx" access=readonly;
 
   %*--- First call creates WORK dset ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES);
 
   %*--- Second call DOES NOT re-create WORK dset ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES);
 
   %*--- NON-EXISTENT VAR error condition ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES,
                        var=MyIdVar);
 
   %*--- NON-UNIQUE VAR error condition ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES,
                        var=IdVar);
 
   %*--- UNIQUE VAR condition, no macro var ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES,
                        var=RelRec.IdVar);
@@ -147,7 +146,7 @@
     %m_read_sdtmig_var(var=RelRec.IdVar);
 
   %*--- UNIQUE VAR condition, CREATE macro var ;
-    %m_read_sdtmig_var(path=../_Offline_/,
+    %m_read_sdtmig_var(path=../WorkingCDISC/,
                        file=sdtmig-3-3-excel.xlsx,
                        tab=SDTMIG V3.3 VARIABLES,
                        var=RelRec.IdVar,
