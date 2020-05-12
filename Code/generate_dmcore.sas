@@ -17,7 +17,7 @@
                                this char should NOT appear in any ARMCD value. 
                                Override, as needed
   Output(s):          DM dataset with 5 (somewhat redundant) standard SDTM vars:
-                        STUDYID, USUBJIT, SITEID, SUBJID, ARMCD, ARM
+                        STUDYID, USUBJID, SITEID, SUBJID, ARMCD, ARM
 
   Comments:           Just a first step for now
 
