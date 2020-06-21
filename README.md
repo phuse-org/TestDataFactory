@@ -5,6 +5,11 @@ We will use this repository to share the source datasets and also to upload the 
 Our PhUSE Wiki project site is:  
 https://www.phusewiki.org/wiki/index.php?title=WG5_Project_09
 
+A few key starting points for interested people:
+* [PharmaSUG 2020 TDF Paper](<Posters/PharmaSUG 2020 - Paper EP-172.docx>)
+* [Updated CDISC-compliant test data](Updated)
+* [Trial Design Matrix excel workbook with TDF configuration extensions](TrialDesign-Tool)
+
 # Programming Guidelines
 This project, as part of the Standard Analyses & Code Sharing working group, adheres to the same [Good Programming Practices](https://github.com/phuse-org/phuse-scripts/blob/master/whitepapers/ProgrammingGuidelines.md).
 
