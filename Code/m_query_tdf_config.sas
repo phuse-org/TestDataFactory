@@ -7,58 +7,57 @@
   Program Date:       2020-06-25
 
   Description:        IN-LINE MACRO - does not generate Base SAS code
-                      Simple initial version of querying TDF config settings
-                      from the WORK data sets read in from TrialDesignMatrix_for_TDF_study.xlsm
-  Input(s):           <TBL>   REQ POSITIONAL ARGUMENT
-                              Available tables are SDTM_CONFIG, TA, TS
-                              These WORK data sets must exist. First call m_read_tdmatrix.sas
-                      <VAR>   REQ POSITIONAL ARGUMENT
-                              Variable in &TBL that holds the desired setting
-                      <WHR>   REQ POSITIONAL ARGUMENT
-                              WHERE clause that uniquely identifies a single config record in &TBL
-                              QUOTED as needed by user
-                              EG: %str(upcase(cfparmcd)="SITEWGT"))
-                              Used in a %sysfunc(open()) call.
-                      <FMT>   OPT KEYWORD ARGUMENT
-                              Put format, to correct raw config value
-                              Provide fmt or infmt, not both. Macro uses first available
-                      <INFMT> OPT KEYWORD ARGUMENT
-                              Input format, to correct raw config value
-                              Provide fmt or infmt, not both. Macro uses first available
+                      Simple initial version of querying WORK data set SETTINGS created by
+                      macro M_READ_TDMATRIX from the
+                      config workbook TrialDesignMatrix_for_TDF_study.xlsm
+  Input(s):           <PARMCD> REQ POSITIONAL ARGUMENT
+                               String, PARMCD of desired setting
+                      <PORV>   REQ POSITIONAL ARGUMENT
+                               PARM or VAL, to return either the label or value for this setting
+                               Defaults to VAL.
+                      <FMT>    OPT KEYWORD ARGUMENT
+                               Put format, to correct raw config value
+                               Ignored for PARM requests
+                               Provide fmt or infmt, not both. Macro uses first available
+                      <INFMT>  OPT KEYWORD ARGUMENT
+                               Input format, to correct raw config value
+                               Ignored for PARM requests
+                               Provide fmt or infmt, not both. Macro uses first available
   Output(s):          In-line response of null (value not found) or appropriately (in)formatted setting
   Comments:           
   Revision History:   
   Date:    Author:    Description of Change:
 ***/
 
-%macro m_query_tdf_config(  tbl
-                          , var
-                          , whr
+%macro m_query_tdf_config(  parmcd
+                          , porv
                           , fmt=%str()
                           , infmt=%str()
-                          ) / minoperator;
+                          );
 
   %local dsid rc resnum restype res resfmt;
 
-  %let tbl=%sysfunc(strip(%upcase(&tbl)));
-  %let var=%sysfunc(strip(%upcase(&var)));
-  %let whr=%sysfunc(strip(%superq(whr)));
+  %if %length(&parmcd) > 0 %then %let parmcd=%sysfunc(strip(%upcase(&parmcd)));
+  %if %length(&porv) > 0 %then %let porv=%sysfunc(strip(%upcase(&porv)));
+
+  %if "&porv" ne "PARM" %then %let porv = VAL;
   %if %length(&fmt) > 0 %then %let fmt=%sysfunc(strip(%upcase(&fmt)));
   %if %length(&infmt) > 0 %then %let infmt=%sysfunc(strip(%upcase(&infmt)));
 
-  %if "&tbl" # ("SDTM_CONFIG" "TA" "TS") %then %do;
-    %let dsid = %sysfunc(open(&tbl(where=(&whr))));
+  %let dsid = %sysfunc(open(settings (where=(upcase(parmcd)="&parmcd"))));
 
-    %if &dsid > 0 %then %do;
-      %let rc = %sysfunc(fetch(&dsid));
+  %if &dsid > 0 %then %do;
+    %let rc = %sysfunc(fetch(&dsid));
 
-      %if &rc = 0 %then %do;
-        %let resnum  = %sysfunc(varnum(&dsid, &var));
-        %let restype = %sysfunc(vartype(&dsid, &resnum));
+    %if &rc = 0 %then %do;
+      %let resnum  = %sysfunc(varnum(&dsid, &porv));
+      %let restype = %sysfunc(vartype(&dsid, &resnum));
 
-        %if &restype = C %then %let res = %sysfunc(getVarC(&dsid, &resnum));
-        %if &restype = N %then %let res = %sysfunc(getVarN(&dsid, &resnum));
+      %*--- For now, PARM and VAL are both C vartypes ---*;
+      %if &restype = C %then %let res = %sysfunc(getVarC(&dsid, &resnum));
+      %if &restype = N %then %let res = %sysfunc(getVarN(&dsid, &resnum));
 
+      %if &porv = VAL %then %do;
         %if %length(&fmt) > 0 %then %do;
           %if %length(&infmt) > 0 %then %put WARNING: (&sysmacroname) FMT and INFMT both specified. Using FMT &fmt..;
           %let res = %sysfunc(put&restype(&res, &fmt));
@@ -66,28 +65,31 @@
         %else %if %length(&infmt) > 0 %then %do;
           %let res = %sysfunc(input&restype(&res, &infmt));
         %end;
-
-        &res.
-      %end;
-      %else %do;
-        %put WARNING: (&sysmacroname) is unable to open [&tbl (where=(&whr))].;
-        %put WARNING- (&sysmacroname) Exiting macro.;
       %end;
 
-      %let dsid = %sysfunc(close(&dsid));
+      &res.
     %end;
     %else %do;
-      %put WARNING: (&sysmacroname) is unable to fetch a fetch a record from [&tbl (where=(&whr))].;
+      %put WARNING: (&sysmacroname) is unable to fetch an obs from SETTINGS (WHERE=(UPCASE(PARMCD)="&PARMCD")).;
       %put WARNING- (&sysmacroname) Exiting macro.;
     %end;
+
+    %let dsid = %sysfunc(close(&dsid));
+  %end;
+  %else %do;
+    %put WARNING: (&sysmacroname) is unable to open SETTINGS (WHERE=(UPCASE(PARMCD)="&PARMCD")).;
+    %put WARNING- (&sysmacroname) Exiting macro.;
   %end;
 
 %mend m_query_tdf_config;
 
 /*** TESTS
 
-  %put Sdtm_Config CFVal for SiteWgt [%m_query_tdf_config(sdtm_Config, CFval, %str(upcase(cfparmcd)="SITEWGT"))];
-  %put Sdtm_Config CFVal for TrtLen [%m_query_tdf_config(sdtm_Config, CFval, %str(upcase(cfparmcd)="TRTLEN"))];
-  %put ts tsval for SstDtc [%m_query_tdf_config(Ts, TsVal, %str(upcase(tsparmcd)="SSTDTC"), infmt=yymmdd10)];
+  %put Sdtm_Config CFVal for SiteWgt [%m_query_tdf_config2(SiteWgt)];
+  %put Sdtm_Config CFVal for SiteWgt [%m_query_tdf_config2(SiteWgt, Val)];
+  %put Sdtm_Config CFVal for SiteWgt [%m_query_tdf_config2(SiteWgt, Parm)];
+  %put Sdtm_Config CFVal for TrtLen [%m_query_tdf_config2(TRTlen, Val)];
+  %put Sdtm_Config CFVal for TrtLen [%m_query_tdf_config2(TRTlen, Parm)];
+  %put ts tsval for SstDtc [%m_query_tdf_config2(SSTdtc, val, infmt=yymmdd10)];
 
 ***/
