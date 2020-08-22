@@ -2,8 +2,10 @@
 All files related to the PhUSE Test Data Factory (TDF) project
 We will use this repository to share the source datasets and also to upload the modified / updated datasets
 
-Our PhUSE Wiki project site is:  
-https://www.phusewiki.org/wiki/index.php?title=WG5_Project_09
+## TDF project sites and resources
+  * PhUSE Teamwork: https://phuse.teamwork.com/
+  * PhUSE Microsoft Teams: https://teams.microsoft.com/go
+  * PhUSE Wiki project: https://www.phusewiki.org/wiki/index.php?title=WG5_Project_09
 
 A few key starting points for interested people:
 * [PharmaSUG 2020 TDF Paper](<Posters/PharmaSUG 2020 - Paper EP-172.docx>)
