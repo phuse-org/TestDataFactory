@@ -1,3 +1,6 @@
+# Overview
+SAS and R code progress in this project, while a python implementation is a component of the [PhUSE Open Data Repository (PODR)](https://github.com/phuse-org/PODR) project.
+
 # Code snippets
 Code snippets, for now, to demonstrate reading a database configuration workbook of spreadsheets that specifies a clinical database.  
 
